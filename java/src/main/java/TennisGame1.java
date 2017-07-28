@@ -1,76 +1,60 @@
-
 public class TennisGame1 implements TennisGame {
-    
-    private int m_score1 = 0;
-    private int m_score2 = 0;
-    private String player1Name;
-    private String player2Name;
+
+    private static final Integer INITIAL_SCORE = 0;
+    private Player player1;
+    private Player player2;
 
     public TennisGame1(String player1Name, String player2Name) {
-        this.player1Name = player1Name;
-        this.player2Name = player2Name;
+        this.player1 = new Player(player1Name, INITIAL_SCORE);
+        this.player2 = new Player(player2Name, INITIAL_SCORE);
     }
 
     public void wonPoint(String playerName) {
-        if (playerName == "player1")
-            m_score1 += 1;
-        else
-            m_score2 += 1;
+        playerWithName(playerName).wonPoint();
     }
 
     public String getScore() {
-        String score = "";
-        int tempScore=0;
-        if (m_score1==m_score2)
-        {
-            switch (m_score1)
-            {
-                case 0:
-                        score = "Love-All";
-                    break;
-                case 1:
-                        score = "Fifteen-All";
-                    break;
-                case 2:
-                        score = "Thirty-All";
-                    break;
-                default:
-                        score = "Deuce";
-                    break;
-                
-            }
-        }
-        else if (m_score1>=4 || m_score2>=4)
-        {
-            int minusResult = m_score1-m_score2;
-            if (minusResult==1) score ="Advantage player1";
-            else if (minusResult ==-1) score ="Advantage player2";
-            else if (minusResult>=2) score = "Win for player1";
-            else score ="Win for player2";
-        }
-        else
-        {
-            for (int i=1; i<3; i++)
-            {
-                if (i==1) tempScore = m_score1;
-                else { score+="-"; tempScore = m_score2;}
-                switch(tempScore)
-                {
-                    case 0:
-                        score+="Love";
-                        break;
-                    case 1:
-                        score+="Fifteen";
-                        break;
-                    case 2:
-                        score+="Thirty";
-                        break;
-                    case 3:
-                        score+="Forty";
-                        break;
-                }
-            }
-        }
-        return score;
+        if (isTied()) return new TieScore(player1, player2).show();
+        if (isAdvantage()) return new AdvantageScore(player1, player2).show();
+        if (areThereWinner()) return new WinnerScore(player1, player2).show();
+
+        return new DefaultScore(player1, player2).show();
+    }
+
+    private Player playerWithName(String playerName) {
+        if (player1.isCalled(playerName)) return player1;
+        return player2;
+    }
+
+    private boolean areThereWinner() {
+        return scoreIsAtLeast3Both() && (player1Won() || player2Won());
+    }
+
+    private boolean isAdvantage() {
+        return scoreIsAtLeast3Both() && (isAdvantageForPlayer1() || isAdvantageForPlayer2());
+    }
+
+    private Boolean player1Won() {
+        return player1.getScore()-player2.getScore()>=2;
+    }
+
+    private Boolean player2Won() {
+        return player1.getScore()-player2.getScore()<=-2;
+    }
+
+    private Boolean isAdvantageForPlayer2() {
+        return player1.getScore()-player2.getScore() == -1;
+    }
+
+    private Boolean isAdvantageForPlayer1() {
+        return player1.getScore()-player2.getScore() == 1;
+    }
+
+    private Boolean scoreIsAtLeast3Both() {
+        return player1.getScore()>=4 || player2.getScore()>=4;
+    }
+
+    private boolean isTied() {
+        return player1.getScore() == player2.getScore();
     }
 }
